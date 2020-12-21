@@ -43,16 +43,29 @@ class Rule {
             }
             console.log("    sizes: " + ms);
         }
-        if(this.id==42) {
+        if(true) {
             let ms = "    ";
             for(let m of this.matchstrs.keys()) {
                 ms = ms + " " + m;
             }
             console.log(ms);
         }
-
     }
-    
+}
+
+function setStr(set) {
+    let ret = "";
+    let first = true;
+    for(let s of set) {
+        if(!first) {
+            ret = ret + ", " + s;
+        }
+        else {
+            ret = s;
+        }
+        first = false;
+    }
+    return ret;
 }
 
 function matchChar(msg, pos, c) {
@@ -171,6 +184,7 @@ function matchLooperInfix(msg, rule, rules) {
     let suffixes = srsuffix.matchstrs;
 
     let goodPrefixes = new Set();
+    //console.log("Matching rule " + rule.id + "    msg: " + msg);
     for(let p of prefixes) {
         if(msg.startsWith(p)) goodPrefixes.add(p);
     }
@@ -181,6 +195,8 @@ function matchLooperInfix(msg, rule, rules) {
             if(sstr == s) goodSuffixes.add(s);
         }
     }
+    //console.log("    prefixes: " + setStr(goodPrefixes));
+    //console.log("    suffixes: " + setStr(goodSuffixes));
 
     for(let p of goodPrefixes) {
         for(let s of goodSuffixes) {
@@ -191,7 +207,7 @@ function matchLooperInfix(msg, rule, rules) {
     for(let p of goodPrefixes) {
         for(let s of goodSuffixes) {
             if((p.length + s.length) < msg.length) {
-                let submsg = msg.substr(p.length, msg.length-s.length);
+                let submsg = msg.substr(p.length, (msg.length-s.length-p.length));
                 let mpos = matchLooperInfix(submsg, rule, rules);
                 if(mpos>-1) return msg.length;
             }
@@ -238,8 +254,6 @@ function parseRule(line) {
         }
         ret.setSubrules(subrules);
     }
-
-    //console.log("Rule: " + JSON.stringify(ret));
     return ret;
 }
 
@@ -283,6 +297,7 @@ function run(rules, msgs) {
         let matchPos = matchRuleZero(msgs[i],rules);
         if(matchPos>=0) {
             ret++;
+            console.log("valid: " + msgs[i]);
         }
         else {
             console.log("invalid: " + msgs[i]);
@@ -318,7 +333,6 @@ function readin(rules,msgs,path) {
         else if(line.includes(":")) {
             let rule = parseRule(line);
             rules[rule.id] = rule;
-            //rules.push(parseRule(line));
         }
         else {
             msgs.push(line);
@@ -327,7 +341,7 @@ function readin(rules,msgs,path) {
     return p;
 }
 
-let rules = new Array(1);
+let rules = new Array(8);
 let msgs = [];
 readin(rules,msgs,"in.txt").then( () => {
     let result = 0;
